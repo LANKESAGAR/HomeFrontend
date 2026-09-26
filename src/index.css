@@ -1,0 +1,66 @@
+@import "tailwindcss";
+
+@theme {
+  /* Warm, home-construction palette: terracotta primary, warm neutrals, green accent */
+  --color-terracotta-50: #fdf4f0;
+  --color-terracotta-100: #fbe6dc;
+  --color-terracotta-200: #f5c8b2;
+  --color-terracotta-300: #eda98a;
+  --color-terracotta-400: #e08a5c;
+  --color-terracotta-500: #cc6a3c;
+  --color-terracotta-600: #b0532b;
+  --color-terracotta-700: #8f4224;
+  --color-terracotta-800: #723522;
+  --color-terracotta-900: #5e2d1f;
+
+  --color-sand-50: #fbf9f5;
+  --color-sand-100: #f6f1e8;
+  --color-sand-200: #ede4d3;
+  --color-sand-300: #ded1b5;
+  --color-sand-400: #c7b48e;
+  --color-sand-500: #ab9670;
+
+  --color-clay-900: #2c2620;
+  --color-clay-800: #3c332a;
+  --color-clay-700: #52463a;
+  --color-clay-600: #6b5c4c;
+  --color-clay-500: #8a7965;
+
+  --color-leaf-50: #f1f7ee;
+  --color-leaf-100: #dfeed8;
+  --color-leaf-500: #4c8c3f;
+  --color-leaf-600: #3c7231;
+
+  --font-sans: "Segoe UI", system-ui, -apple-system, sans-serif;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  background-color: var(--color-sand-50);
+  color: var(--color-clay-900);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Tabular figures for aligned numeric columns */
+.tabular-nums {
+  font-variant-numeric: tabular-nums;
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--color-sand-300);
+  border-radius: 999px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
