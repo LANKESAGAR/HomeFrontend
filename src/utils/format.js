@@ -67,6 +67,19 @@ export function formatDateTime(dateStr) {
   });
 }
 
+const PAYMENT_MODE_LABELS = {
+  CASH: "Cash",
+  BANK_TRANSFER: "Bank Transfer",
+  UPI: "UPI",
+  CHEQUE: "Cheque",
+  OTHER: "Other",
+};
+
+// "BANK_TRANSFER" -> "Bank Transfer" (the backend enum's raw constant name)
+export function formatPaymentMode(mode) {
+  return PAYMENT_MODE_LABELS[mode] ?? mode ?? "";
+}
+
 export function formatDate(dateStr) {
   if (!dateStr) return "";
   const d = new Date(dateStr);

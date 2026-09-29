@@ -82,6 +82,11 @@ function renderInactiveSlice(props) {
 function DonutChart({ data, formatDual, centerCaption, onSliceClick, height = 300 }) {
   const total = data.reduce((sum, d) => sum + d.value, 0);
   const totalDual = formatDual(total);
+  // The default Recharts tooltip follows the cursor, which on a compact donut
+  // means it renders right over the center-total overlay while hovering a
+  // slice. Fading the overlay out during hover avoids the two fighting for
+  // the same space, rather than fighting Recharts' cursor-following default.
+  const [hovering, setHovering] = useState(false);
 
   function fire(entry) {
     if (!entry || entry.clickable === false) return;
@@ -104,6 +109,8 @@ function DonutChart({ data, formatDual, centerCaption, onSliceClick, height = 30
             activeShape={renderActiveSlice}
             inactiveShape={renderInactiveSlice}
             onClick={(d) => fire(d?.payload)}
+            onMouseEnter={() => setHovering(true)}
+            onMouseLeave={() => setHovering(false)}
           >
             {data.map((entry) => (
               <Cell
@@ -115,7 +122,10 @@ function DonutChart({ data, formatDual, centerCaption, onSliceClick, height = 30
               />
             ))}
           </Pie>
-          <Tooltip formatter={(value) => `${formatDual(value).primary} (${formatDual(value).secondary})`} />
+          <Tooltip
+            formatter={(value) => `${formatDual(value).primary} (${formatDual(value).secondary})`}
+            wrapperStyle={{ zIndex: 20 }}
+          />
           <Legend
             wrapperStyle={{ fontSize: 12, cursor: "pointer" }}
             onClick={(legendEntry) => fire(legendEntry?.payload)}
@@ -123,7 +133,7 @@ function DonutChart({ data, formatDual, centerCaption, onSliceClick, height = 30
         </PieChart>
       </ResponsiveContainer>
       <div
-        className="absolute inset-0 flex flex-col items-center justify-center text-center pointer-events-none"
+        className={`absolute inset-0 flex flex-col items-center justify-center text-center pointer-events-none transition-opacity duration-150 ${hovering ? "opacity-0" : "opacity-100"}`}
         style={{ paddingBottom: 28 }}
       >
         <span className="text-[10px] uppercase tracking-wide text-clay-400">{centerCaption}</span>
@@ -211,7 +221,7 @@ export default function Dashboard() {
   }
 
   const colorMap = buildCategoryColorMap(summary?.categoryBreakdown ?? []);
-  const remainingPct = summary?.totalBudget > 0 ? (summary.remaining / summary.totalBudget) * 100 : 0;
+  const remainingPct = summary?.totalContributed > 0 ? (summary.remaining / summary.totalContributed) * 100 : 0;
   let remainingTone = "good";
   if (remainingPct < 10) remainingTone = "danger";
   else if (remainingPct < 25) remainingTone = "warning";
@@ -312,10 +322,11 @@ export default function Dashboard() {
 
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <SummaryCard
-          label="Total Budget"
-          value={formatDual(summary?.totalBudget).primary}
-          secondaryValue={formatDual(summary?.totalBudget).secondary}
+          label="Total Funds Available"
+          value={formatDual(summary?.totalContributed).primary}
+          secondaryValue={formatDual(summary?.totalContributed).secondary}
           tone="neutral"
+          sublabel="Bank Loan + Personal Funds contributed so far"
         />
         <SummaryCard
           label="Total Spent"
@@ -328,7 +339,7 @@ export default function Dashboard() {
           value={formatDual(summary?.remaining).primary}
           secondaryValue={formatDual(summary?.remaining).secondary}
           tone={remainingTone}
-          sublabel={`${remainingPct.toFixed(0)}% of budget left`}
+          sublabel={`${remainingPct.toFixed(0)}% of funds left`}
         />
       </div>
 

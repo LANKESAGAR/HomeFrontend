@@ -4,7 +4,7 @@ import { getExpenses, createExpense, updateExpense, deleteExpense, exportExpense
 import { getCategories, createCategory } from "../api/categories";
 import ExpenseFormModal from "../components/ExpenseFormModal";
 import ConfirmDialog from "../components/ConfirmDialog";
-import { formatInr, formatDate } from "../utils/format";
+import { formatInr, formatDate, formatPaymentMode } from "../utils/format";
 import { useCurrency } from "../context/CurrencyContext";
 import { FUNDING_SOURCES, fundingSourceLabel, fundingSourceColor } from "../utils/fundingSources";
 
@@ -264,7 +264,7 @@ export default function Expenses() {
                           <FundingBadges splits={exp.fundingSplits} amount={exp.amount} formatDual={formatDual} />
                         </td>
                         <td className="px-4 py-3 text-clay-700">{exp.paidBy}</td>
-                        <td className="px-4 py-3 text-clay-700">{exp.paymentMode}</td>
+                        <td className="px-4 py-3 text-clay-700">{formatPaymentMode(exp.paymentMode)}</td>
                         <td className="px-4 py-3 text-clay-500 max-w-[180px] truncate" title={exp.note}>{exp.note || "No note"}</td>
                         <td className="px-4 py-3 text-right whitespace-nowrap">
                           <button onClick={() => openEditModal(exp)} className="text-terracotta-600 hover:underline text-xs font-medium mr-3">Edit</button>
@@ -286,7 +286,7 @@ export default function Expenses() {
                     <div className="flex justify-between items-start gap-3">
                       <div className="min-w-0">
                         <p className="text-sm font-medium text-clay-900 truncate">{exp.categoryName}</p>
-                        <p className="text-xs text-clay-500 mt-0.5">{formatDate(exp.date)} · {exp.paymentMode}</p>
+                        <p className="text-xs text-clay-500 mt-0.5">{formatDate(exp.date)} · {formatPaymentMode(exp.paymentMode)}</p>
                       </div>
                       <div className="text-right shrink-0">
                         <p className="text-sm font-semibold tabular-nums text-clay-900">{dual.primary}</p>

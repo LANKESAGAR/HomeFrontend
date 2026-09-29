@@ -1,7 +1,7 @@
 ﻿import { useEffect, useState, useCallback } from "react";
+import { Link } from "react-router-dom";
 import { getCategories, createCategory, updateCategory, deleteCategory } from "../api/categories";
 import { getDashboardSummary } from "../api/dashboard";
-import { getSettings, updateSettings } from "../api/settings";
 import ProgressBar from "../components/ProgressBar";
 import CategoryFormModal from "../components/CategoryFormModal";
 import ConfirmDialog from "../components/ConfirmDialog";
@@ -12,10 +12,7 @@ import { useCurrency } from "../context/CurrencyContext";
 export default function Budget() {
   const { formatDual } = useCurrency();
   const [breakdown, setBreakdown] = useState([]);
-  const [totalBudget, setTotalBudget] = useState(0);
-  const [totalBudgetInput, setTotalBudgetInput] = useState("");
-  const [editingTotalBudget, setEditingTotalBudget] = useState(false);
-  const [savingTotalBudget, setSavingTotalBudget] = useState(false);
+  const [totalContributed, setTotalContributed] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
@@ -27,13 +24,9 @@ export default function Budget() {
     setLoading(true);
     setError("");
     try {
-      const [summary, settings] = await Promise.all([
-        getDashboardSummary(),
-        getSettings(),
-      ]);
+      const summary = await getDashboardSummary();
       setBreakdown(summary.categoryBreakdown ?? []);
-      setTotalBudget(settings.totalBudget ?? 0);
-      setTotalBudgetInput(String(settings.totalBudget ?? 0));
+      setTotalContributed(summary.totalContributed ?? 0);
     } catch (err) {
       setError("Could not load budget data. Please try again.");
     } finally {
@@ -78,25 +71,6 @@ export default function Budget() {
     }
   }
 
-  async function handleSaveTotalBudget() {
-    const value = Number(totalBudgetInput);
-    if (Number.isNaN(value) || value < 0) {
-      setError("Total budget must be a valid non-negative number.");
-      return;
-    }
-    setSavingTotalBudget(true);
-    setError("");
-    try {
-      await updateSettings({ totalBudget: value });
-      setTotalBudget(value);
-      setEditingTotalBudget(false);
-    } catch (err) {
-      setError("Could not update total budget. Please try again.");
-    } finally {
-      setSavingTotalBudget(false);
-    }
-  }
-
   const colorMap = buildCategoryColorMap(breakdown);
   const allocatedSum = breakdown.reduce((sum, c) => sum + (c.allocated || 0), 0);
 
@@ -121,57 +95,22 @@ export default function Budget() {
 
       {error && <p className="text-sm text-red-600">{error}</p>}
 
-      {/* Total house budget */}
+      {/* Total funds available (from Bank Loan + Personal contributions logged on the Funding page) */}
       <div className="bg-white rounded-xl border border-sand-200 p-5 shadow-sm">
-        <div className="flex items-center justify-between flex-wrap gap-3">
-          <div>
-            <p className="text-sm font-medium text-clay-600">Total House Budget</p>
-            {editingTotalBudget ? (
-              <div className="mt-2 flex flex-wrap items-center gap-2">
-                <input
-                  type="number"
-                  min="0"
-                  value={totalBudgetInput}
-                  onChange={(e) => setTotalBudgetInput(e.target.value)}
-                  className="rounded-lg border border-sand-300 px-3 py-2 text-sm w-full sm:w-40 focus:outline-none focus:ring-2 focus:ring-terracotta-400"
-                />
-                <div className="flex gap-2">
-                  <button
-                    onClick={handleSaveTotalBudget}
-                    disabled={savingTotalBudget}
-                    className="text-sm font-medium rounded-lg bg-terracotta-600 text-white px-3 py-2 hover:bg-terracotta-700 disabled:opacity-60"
-                  >
-                    {savingTotalBudget ? "Saving..." : "Save"}
-                  </button>
-                  <button
-                    onClick={() => { setEditingTotalBudget(false); setTotalBudgetInput(String(totalBudget)); }}
-                    className="text-sm font-medium rounded-lg px-3 py-2 text-clay-600 hover:bg-sand-100"
-                  >
-                    Cancel
-                  </button>
-                </div>
-              </div>
-            ) : (
-              <div className="mt-1">
-                <p className="text-2xl font-semibold text-clay-900 tabular-nums">{formatDual(totalBudget).primary}</p>
-                <p className="text-xs text-clay-400 tabular-nums">{formatDual(totalBudget).secondary}</p>
-              </div>
-            )}
-          </div>
-          {!editingTotalBudget && (
-            <button
-              onClick={() => setEditingTotalBudget(true)}
-              className="text-sm font-medium text-terracotta-600 hover:underline"
-            >
-              Edit
-            </button>
-          )}
+        <p className="text-sm font-medium text-clay-600">Total Funds Available</p>
+        <div className="mt-1">
+          <p className="text-2xl font-semibold text-clay-900 tabular-nums">{formatDual(totalContributed).primary}</p>
+          <p className="text-xs text-clay-400 tabular-nums">{formatDual(totalContributed).secondary}</p>
         </div>
+        <p className="mt-2 text-xs text-clay-500">
+          From Bank Loan + Personal Funds contributed so far. Log new contributions on the{" "}
+          <Link to="/funding" className="text-terracotta-600 hover:underline">Funding page</Link> whenever more comes in.
+        </p>
         {allocatedSum > 0 && (
           <p className="mt-3 text-xs text-clay-500">
             {formatInr(allocatedSum)} allocated across {breakdown.length} categor{breakdown.length === 1 ? "y" : "ies"}
-            {allocatedSum > totalBudget && (
-              <span className="text-red-600 font-medium">, which exceeds the total budget</span>
+            {allocatedSum > totalContributed && (
+              <span className="text-red-600 font-medium">, which exceeds total funds available</span>
             )}
           </p>
         )}

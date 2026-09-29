@@ -2,7 +2,16 @@ import { useEffect, useState } from "react";
 import { FUNDING_SOURCES } from "../utils/fundingSources";
 import { formatInr } from "../utils/format";
 
-const PAYMENT_MODES = ["Cash", "Bank Transfer", "UPI", "Cheque", "Other"];
+// `value` must match the backend's PaymentMode enum constant names exactly
+// (Jackson enum deserialization is case-sensitive and doesn't map spaces to
+// underscores) - `label` is what the user sees.
+const PAYMENT_MODES = [
+  { value: "CASH", label: "Cash" },
+  { value: "BANK_TRANSFER", label: "Bank Transfer" },
+  { value: "UPI", label: "UPI" },
+  { value: "CHEQUE", label: "Cheque" },
+  { value: "OTHER", label: "Other" },
+];
 
 const emptyForm = {
   date: new Date().toISOString().slice(0, 10),
@@ -281,7 +290,7 @@ export default function ExpenseFormModal({ open, categories, initialData, onClos
                 className="w-full rounded-lg border border-sand-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-terracotta-400"
               >
                 {PAYMENT_MODES.map((m) => (
-                  <option key={m} value={m}>{m}</option>
+                  <option key={m.value} value={m.value}>{m.label}</option>
                 ))}
               </select>
             </div>
